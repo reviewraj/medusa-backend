@@ -26,9 +26,8 @@
 
 * To Verification of the node js server installation please execute the below command in the cmd 
 
-       '''
-          node -v
-      '''
+       ` node -v`
+      
            
    <it will gives the nodejs server version>
            
