@@ -26,9 +26,9 @@
 
 * To Verification of the node js server installation please execute the below command in the cmd 
 
-           **
+           ***
          node -v
-           **  
+           ***
    <it will gives the nodejs server version>
            
 ![Screenshot 2024-09-11 104122](https://github.com/user-attachments/assets/6c332ce5-00f6-499a-8aae-7271210a3bf4)
@@ -36,9 +36,9 @@
 * If it is not installed means refer this link(make sure you choose installation method based on your os  ) → [node js installer](https://nodejs.org/en/download/prebuilt-installer)   
 * To Verification of the postgres server installation please execute the below command in the cmd 
 
-           **
+           ***
       Psql -p <psql port> -U postgres
-      **
+      ***
      <it want prompt for password if it is installed>
 ![image](https://github.com/user-attachments/assets/5e3fa267-f3fc-4e3c-b01d-f90892bebd08)
 
