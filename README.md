@@ -1,6 +1,6 @@
 # Medusa-backend-server-setup
 
-![][image1]
+[company logo ](https://images.app.goo.gl/RREaH7WFiVTJ7eTX8)
 
 # 
 
