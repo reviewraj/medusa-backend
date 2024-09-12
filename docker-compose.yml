@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  dev:
+    build:
+      context: ./medus-backend-dev      # Development folder
+      dockerfile: Dockerfile_dev       # Use the Dockerfile inside the development folder
+    ports:
+      - "7001:7001"               # Map port 7001 for development (optional)
+      - "9000:9000"               # Map port 9000 for development
+    environment:
+      - NODE_ENV=development
+                   # Bind mount the current directory to /app inside the container
+    command: ["medusa", "develop"] # Start Medusa in development mode
+
+  prod:
+    build:
+      context: ./medus-backend-prod        # Production folder
+      dockerfile: Dockerfile_prod       # Use the Dockerfile inside the production folder
+    ports:
+      - "9000:9000"                # Map port 9000 for production
+    environment:
+      - NODE_ENV=production                     # Bind mount the current directory to /app inside the container
+    command: ["npm", "start"]       # Start Medusa in production mode
