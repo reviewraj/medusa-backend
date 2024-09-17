@@ -3,7 +3,7 @@ name: Deploy to EC2
 on:
   push:
     branches:
-      - main
+      - task4
 
 jobs:
   deploy:
@@ -21,7 +21,7 @@ jobs:
       - name: Deploy Docker Compose
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-            cd /path/to/your/project
+            cd /home/ubuntu
             docker-compose pull
             docker-compose up -d
           EOF
