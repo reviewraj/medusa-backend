@@ -1,6 +1,6 @@
 name: Infrastructure Setup
 
-# Triggers on changes within the 'terraform/' folder and manual dispatch
+# Triggers on changes within the 'infrastructure/' folder and manual dispatch
 on:
   push:
     paths:
@@ -37,12 +37,29 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve
-          # Capture instance IP and debug output
-          INSTANCE_IP=$(terraform output -raw instance_ip)
-          echo "INSTANCE_IP=${INSTANCE_IP}"
-          echo "EC2_HOST=${INSTANCE_IP}" >> $GITHUB_ENV
+          echo "EC2_HOST=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
 
-      - name: Debug Environment Variables
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Install Docker and Docker Compose
         run: |
-          cat $GITHUB_ENV
-          echo "EC2_HOST=${{ env.EC2_HOST }}"
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << 'EOF'
+            # Update package list and install Docker
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+            
+            # Enable and start Docker service
+            sudo systemctl enable docker
+            sudo systemctl start docker
+            
+            # Install Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/2.22.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            
+            # Verify installation
+            docker --version
+            docker-compose --version
+          EOF
