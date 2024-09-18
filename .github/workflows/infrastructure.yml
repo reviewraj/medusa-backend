@@ -4,7 +4,7 @@ name: Infrastructure Setup
 on:
   push:
     paths:
-      - 'infrastructure/**'  # Triggers only when files in this folder change
+      - 'terraform/**'  # Triggers only when files in this folder change
   workflow_dispatch: # Allows manual trigger of the workflow
 
 jobs:
@@ -29,12 +29,12 @@ jobs:
 
       - name: Terraform Init
         run: |
-          cd infrastructure # Navigate to your infrastructure folder
+          cd terraform # Navigate to your infrastructure folder
           terraform init
 
       - name: Terraform Apply
         id: terraform_apply
         run: |
-          cd infrastructure
+          cd terraform
           terraform apply -auto-approve
           echo "EC2_HOST=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
