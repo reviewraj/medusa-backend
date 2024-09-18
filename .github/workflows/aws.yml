@@ -51,7 +51,9 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve
-          echo "EC2_HOST=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
+          # Capture instance IP
+          INSTANCE_IP=$(terraform output -raw instance_ip)
+          echo "EC2_HOST=$INSTANCE_IP" >> $GITHUB_ENV
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
@@ -70,55 +72,4 @@ jobs:
             sudo systemctl start docker
             
             # Install Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/download/2.22.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            
-            # Verify installation
-            docker --version
-            docker-compose --version
-          EOF
-
-      - name: Deploy Docker Compose
-        run: |
-          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << 'EOF'
-            cd /home/ubuntu
-            cat << 'EOC' > docker-compose.yml
-            version: '3.8'
-            services:
-              postgres:
-                image: postgres:13
-                environment:
-                  POSTGRES_USER: medusa
-                  POSTGRES_PASSWORD: medusa_password
-                  POSTGRES_DB: medusa_db
-                volumes:
-                  - postgres-data:/var/lib/postgresql/data
-                ports:
-                  - '5432:5432'
-                networks:
-                  - medusa-network
-
-              medusa:
-                image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}
-                environment:
-                  DATABASE_URL: postgres://medusa:medusa_password@postgres:5432/medusa_db
-                  MEDUSA_ADMIN_CORS: http://localhost:7000
-                  MEDUSA_STORE_CORS: http://localhost:8000
-                ports:
-                  - '9000:9000'
-                depends_on:
-                  - postgres
-                networks:
-                  - medusa-network
-
-            volumes:
-              postgres-data:
-
-            networks:
-              medusa-network:
-                driver: bridge
-            EOC
-            
-            docker-compose pull
-            docker-compose up -d
-          EOF
+            sudo curl -L "https://github.com/docker/compose/releases/download/2.22.
