@@ -25,9 +25,9 @@ jobs:
       - name: Build and push Docker image
         run: |
           VERSION=$(date +%Y%m%d%H%M%S)  # Use full date format (YearMonthDayHourMinuteSecond)
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }} .
-          docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV  # Make VERSION available to subsequent steps
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION}
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
@@ -38,8 +38,8 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
             cd /home/ubuntu
-            # Make sure to replace the image tag in the docker-compose file dynamically
-            sed -i 's|image: .*/medusa-backend-dev:.*|image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}|' docker-compose.yml
+            sed -i "s|image: .*$|image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION}|" docker-compose.yml  # Update image version in docker-compose
             docker-compose pull
             docker-compose up -d
           EOF
+
