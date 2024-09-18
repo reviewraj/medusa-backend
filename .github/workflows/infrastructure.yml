@@ -1,0 +1,40 @@
+name: Infrastructure Setup
+
+# Triggers on changes within the 'infrastructure/' folder and manual dispatch
+on:
+  push:
+    paths:
+      - 'infrastructure/**'  # Triggers only when files in this folder change
+  workflow_dispatch: # Allows manual trigger of the workflow
+
+jobs:
+  infra-setup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.0
+
+      - name: Terraform Init
+        run: |
+          cd infrastructure # Navigate to your infrastructure folder
+          terraform init
+
+      - name: Terraform Apply
+        id: terraform_apply
+        run: |
+          cd infrastructure
+          terraform apply -auto-approve
+          echo "EC2_HOST=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
