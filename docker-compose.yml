@@ -15,7 +15,7 @@ services:
       - medusa-network
 
   medusa:
-    image: nagaraju7876482/medusa-backend-dev:attempt34
+    image: nagaraju7876482/medusa-backend-dev:${{ env.VERSION }}
     environment:
       # The connection string to the Postgres container
       DATABASE_URL: postgres://medusa:medusa_password@postgres:5432/medusa_db
