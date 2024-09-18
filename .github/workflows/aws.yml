@@ -24,9 +24,12 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_TAG=$(date +%Y%m%d%H%M%S)
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:$IMAGE_TAG .
-          docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:$IMAGE_TAG
+          VERSION=$(date +%d)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}
+
+        
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
