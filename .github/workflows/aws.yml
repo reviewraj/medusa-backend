@@ -51,7 +51,7 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve
-          echo "EC2_HOST=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
+          echo "EC2_HOST=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
