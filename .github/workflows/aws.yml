@@ -58,11 +58,31 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
+      - name: Install Docker and Docker Compose
+        run: |
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << 'EOF'
+            # Update package list and install Docker
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+            
+            # Enable and start Docker service
+            sudo systemctl enable docker
+            sudo systemctl start docker
+            
+            # Install Docker Compose
+            sudo curl -L "https://github.com/docker/compose/releases/download/2.22.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            
+            # Verify installation
+            docker --version
+            docker-compose --version
+          EOF
+
       - name: Deploy Docker Compose
         run: |
-          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << EOF
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << 'EOF'
             cd /home/ubuntu
-            echo "
+            cat << 'EOC' > docker-compose.yml
             version: '3.8'
             services:
               postgres:
@@ -97,9 +117,8 @@ jobs:
             networks:
               medusa-network:
                 driver: bridge
-            " > docker-compose.yml
+            EOC
             
             docker-compose pull
             docker-compose up -d
-            echo "help"
           EOF
