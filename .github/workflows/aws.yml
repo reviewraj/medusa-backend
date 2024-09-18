@@ -36,14 +36,12 @@ jobs:
 
       - name: Deploy Docker Compose
         run: |
-          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << EOF
             cd /home/ubuntu
             # Safely update the image version in docker-compose.yml
-            sed -i "s|image: .*$|image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION}|" docker-compose.yml
+            sed -i "s|image: .*$|image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}|" docker-compose.yml
             
             # Pull the latest image and restart the services
             docker-compose pull
             docker-compose up -d
           EOF
-
-
