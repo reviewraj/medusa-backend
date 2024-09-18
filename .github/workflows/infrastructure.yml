@@ -37,7 +37,8 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve
-          echo "EC2_HOST=$(terraform output -raw instance_public_ip)" >> $GITHUB_ENV
+           EC2_HOST=$(terraform output -raw instance_ip)
+          echo "EC2_HOST=${EC2_HOST}" >> $GITHUB_ENV
 
       - name: Debug environment variables
         run: |
