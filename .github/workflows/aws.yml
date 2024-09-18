@@ -24,7 +24,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          VERSION=$(date +%d)
+          VERSION=$(date +%d%H%M%)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
           docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }} .
           docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}
