@@ -24,10 +24,34 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          VERSION=$(date +%Y%m%d%H%M%S)  # Use full date format (YearMonthDayHourMinuteSecond)
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV  # Make VERSION available to subsequent steps
+          VERSION=$(date +%Y%m%d%H%M%S)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
           docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION} .
           docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION}
+
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.4.0
+
+      - name: Terraform Init
+        run: |
+          cd terraform
+          terraform init
+
+      - name: Terraform Apply
+        id: terraform_apply
+        run: |
+          cd terraform
+          terraform apply -auto-approve
+          echo "EC2_HOST=$(terraform output -raw instance_ip)" >> $GITHUB_ENV
 
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
@@ -36,12 +60,45 @@ jobs:
 
       - name: Deploy Docker Compose
         run: |
-          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << EOF
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << EOF
             cd /home/ubuntu
-            # Safely update the image version in docker-compose.yml
-            sed -i "s|image: .*$|image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}|" docker-compose.yml
+            echo "
+            version: '3.8'
+            services:
+              postgres:
+                image: postgres:13
+                environment:
+                  POSTGRES_USER: medusa
+                  POSTGRES_PASSWORD: medusa_password
+                  POSTGRES_DB: medusa_db
+                volumes:
+                  - postgres-data:/var/lib/postgresql/data
+                ports:
+                  - '5432:5432'
+                networks:
+                  - medusa-network
+
+              medusa:
+                image: ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${{ env.VERSION }}
+                environment:
+                  DATABASE_URL: postgres://medusa:medusa_password@postgres:5432/medusa_db
+                  MEDUSA_ADMIN_CORS: http://localhost:7000
+                  MEDUSA_STORE_CORS: http://localhost:8000
+                ports:
+                  - '9000:9000'
+                depends_on:
+                  - postgres
+                networks:
+                  - medusa-network
+
+            volumes:
+              postgres-data:
+
+            networks:
+              medusa-network:
+                driver: bridge
+            " > docker-compose.yml
             
-            # Pull the latest image and restart the services
             docker-compose pull
             docker-compose up -d
           EOF
