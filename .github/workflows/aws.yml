@@ -26,8 +26,8 @@ jobs:
         run: |
           VERSION=$(date +%Y%m%d%H%M%S)
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION} .
-          docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-dev:${VERSION}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:${VERSION} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:${VERSION}
 
       - name: Set up AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -36,40 +36,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.4.0
-
-      - name: Terraform Init
-        run: |
-          cd terraform
-          terraform init
-
-      - name: Terraform Apply
-        id: terraform_apply
-        run: |
-          cd terraform
-          terraform apply -auto-approve
-          # Capture instance IP
-          INSTANCE_IP=$(terraform output -raw instance_ip)
-          echo "EC2_HOST=$INSTANCE_IP" >> $GITHUB_ENV
-
       - name: Set up SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      - name: Install Docker and Docker Compose
+      - name: Update Docker Compose file on EC2
         run: |
-          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ env.EC2_HOST }} << 'EOF'
-            # Update package list and install Docker
-            sudo apt-get update
-            sudo apt-get install -y docker.io
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+            # Navigate to the directory containing the docker-compose.yml file
+            cd /home/ubuntu
             
-            # Enable and start Docker service
-            sudo systemctl enable docker
-            sudo systemctl start docker
+            # Replace the image tag in the docker-compose.yml file with the new version
+            sed -i "s|${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:.*|${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:${VERSION}|g" docker-compose.yml
             
-            # Install Docker Compose
-            sudo curl -L "https://github.com/docker/compose/releases/download/2.22.
+            # Bring up the services using Docker Compose
+            sudo docker-compose up -d
+          EOF
