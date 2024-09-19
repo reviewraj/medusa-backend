@@ -1,8 +1,4 @@
-# Medusa-backend-server-setup-in local
-
-![][image1]
-
-# 
+# Medusa-backend-server-setup-in loca
 
 # 
 
