@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Stage 1: Build Stage
-FROM node:20.14.0-alpine 
+FROM node:20.14.0-alpine AS build
 
 WORKDIR /app
 
@@ -14,6 +14,7 @@ RUN npm install && npm install -g @medusajs/medusa-cli@latest
 # Copy the rest of the application code
 COPY . .
 
+RUN medusa migrations run
 
 EXPOSE 9000
 
