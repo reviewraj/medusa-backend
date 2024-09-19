@@ -1,4 +1,4 @@
-# Medusa-backend-server-setup-in loca
+# Medusa-backend-server-setup-in local
 
 # 
 
