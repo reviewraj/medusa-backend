@@ -43,12 +43,12 @@ jobs:
 
       - name: Update Docker Compose file on EC2
         run: |
-          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+          ssh -t -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} << EOF
             # Navigate to the directory containing the docker-compose.yml file
             cd /home/ubuntu
             
-            # Replace the image tag in the docker-compose.yml file with the new version
-            sed -i "s|${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:.*|${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:${VERSION}|g" docker-compose.yml
+            # Update the image version in the docker-compose.yml file
+            sudo sed -i "s|${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:.*|${{ secrets.DOCKER_USERNAME }}/medusa-backend-prod:${VERSION}|g" docker-compose.yml
             
             # Bring up the services using Docker Compose
             sudo docker-compose up -d
