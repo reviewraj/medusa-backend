@@ -26,7 +26,7 @@ jobs:
       # Build and push Docker image to ECR
       - name: Build and push Docker image
         env:
-          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          ECR_REGISTRY: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
           ECR_REPOSITORY: medusa-backend-prod
           IMAGE_TAG: ${{ github.sha }}
         run: |
