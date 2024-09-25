@@ -95,7 +95,7 @@ resource "aws_ecs_task_definition" "medusa_backend_server" {
   
   container_definitions = jsonencode([{
     name      = "medusa_backend"
-    image     = "${aws_ecr_repository.medusa_backend_prod.repository_url}:${var.image_tag}"
+    image     = "767397946501.dkr.ecr.us-east-1.amazonaws.com/medusa-backend-prod:${var.image_tag}"
     essential = true
     portMappings = [{
       containerPort = 9000
