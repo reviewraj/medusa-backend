@@ -26,7 +26,7 @@ resource "aws_service_discovery_service" "medusa_service" {
     failure_threshold = 1
   }
 }
-# ECS Task Definition for Medusa Postgres
+
 resource "aws_ecs_task_definition" "medusa_postgres" {
   family                   = "medusa_postgres"
   network_mode             = "awsvpc"
@@ -95,7 +95,7 @@ resource "aws_ecs_task_definition" "medusa_backend_server" {
   
   container_definitions = jsonencode([{
     name      = "medusa_backend"
-    image     = "767397946501.dkr.ecr.us-east-1.amazonaws.com/medusa-backend-prod:attempt34"
+    image     = "${aws_ecr_repository.medusa_backend_prod.repository_url}:${var.image_tag}"
     essential = true
     portMappings = [{
       containerPort = 9000
@@ -118,14 +118,7 @@ resource "aws_ecs_task_definition" "medusa_backend_server" {
         value = "postgres://medusa:medusa_password@medusa-postgres-service.medusa.local:5432/medusa_db"
       }
     ]
-    logConfiguration = {
-      logDriver = "awslogs"
-      options = {
-        awslogs-group         = "/ecs/medusa_backend_logs"
-        awslogs-region        = "us-east-1"
-        awslogs-stream-prefix = "ecs"
-      }
-    }
+    
   }])
 }
 
@@ -149,8 +142,3 @@ resource "aws_ecs_service" "pearlthoughts_medusa" {
 }
 
 
-# CloudWatch Log Group for Medusa Backend
-resource "aws_cloudwatch_log_group" "medusa_backend_logs" {
-  name              = "/ecs/medusa_backend_logs"
-  retention_in_days = 7  # You can adjust the retention period based on your needs
-}
