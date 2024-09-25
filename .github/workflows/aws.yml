@@ -56,10 +56,13 @@ jobs:
 
       # Terraform Init
       - name: Terraform Init
-        run: terraform init
+        run: |
+          cd terraform
+          terraform init
 
       # Terraform Apply to Update ECS Task Definition and Deploy
       - name: Terraform Apply
         run: |
+          cd terraform
           terraform apply -auto-approve -var "image_tag=${{ github.sha }}"
         continue-on-error: false # Ensure the workflow fails if this step fails
