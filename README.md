@@ -1,15 +1,5 @@
 # Medusa-backend-server-setup-in local
 
-# 
-
-# 
-
-# 
-
-# 
-
-# 
-
 # **Overview**
 
 ● 	Installation of  dependencies
